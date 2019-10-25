@@ -13,13 +13,13 @@ class MasterServer:
         threading.Thread(target=self.master_server_loop, args=()).start()
 
     def client_loop(self, client_id, connection, address):
-        print(connection)
-        print(address)
+        # print(connection)
+        # print(address)
         while True:
             data = connection.recv(self.buffer_size)
             if not data:
                 break
-            print("received data at ", client_id, ":", data.decode(encoding='utf-8'))
+            print("received data from ", client_id, ":", data.decode(encoding='utf-8'))
             connection.send(data)  # echo
         connection.close()
 
