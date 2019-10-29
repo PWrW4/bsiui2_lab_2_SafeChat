@@ -1,6 +1,13 @@
 import os
 from client.client import Client
 from dotenv import load_dotenv
+
 load_dotenv()
 
-c = Client(master_server_ip=os.getenv("TCP_IP"), master_server_port=os.getenv("TCP_PORT"), buffer_size=os.getenv("BUFFER_SIZE "))
+ip = str(os.getenv("TCP_IP"))
+port = int(os.getenv("TCP_PORT"))
+buffer_size = int(os.getenv("BUFFER_SIZE"))
+
+print("IP: ", ip, "PORT: ", port, "BUFFER_SIZE: ", buffer_size)
+
+c = Client(master_server_ip=ip, master_server_port=port, buffer_size=buffer_size)

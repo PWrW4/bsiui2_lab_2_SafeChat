@@ -8,7 +8,7 @@ class Client:
         self.master_server_port = master_server_port
         print("client connecting")
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.master_server_ip, int(self.master_server_port)))
+        s.connect((self.master_server_ip, self.master_server_port))
         self.message = input('Message: ')
         s.send(self.message.encode('utf-8'))
         data = s.recv(self.buffer_size)
