@@ -1,5 +1,8 @@
 import socket
 import threading
+import json
+import helpers.message as msg
+import helpers.encryption as enc
 import os
 
 
@@ -14,14 +17,35 @@ class MasterServer:
         threading.Thread(target=self.master_server_loop, args=()).start()
 
     def client_loop(self, client_id, connection, address):
-        # print(connection)
-        # print(address)
+        data = connection.recv(self.buffer_size)
+        if not data:
+            connection.send(msg.create_message(action='ERROR', arg1="no data"))
+            connection.close()
+        received_json = msg.measage_to_json(data)
+        if received_json['action'] != "HELLO":
+            connection.send(msg.create_message(action='ERROR', arg1="wrong first message"))
+            connection.close()
+        public_key, private_key = enc.new_key()
+        print(public_key)
+        connection.send(public_key)
+        client_public_key = connection.recv(self.buffer_size)
+        client_public_key = enc.decrypt(private_key, client_public_key)
+
+        connection.send(enc.encrypt(client_public_key,msg.create_message(action="OK")))
+
+        data = connection.recv(self.buffer_size)
+        received_json = msg.measage_to_json(data)
+
+        print(received_json)
+
         while True:
+            print("dupa4")
             data = connection.recv(self.buffer_size)
             if not data:
                 break
-            print("received data from ", client_id, ":", data.decode(encoding='utf-8'))
-            connection.send(data)  # echo
+            print(data.decode(encoding='utf-8'))
+            received_json = msg.measage_to_json(data)
+            connection.send(str(received_json['action']).encode(encoding='utf-8'))  # echo
         connection.close()
 
     def master_server_loop(self):
