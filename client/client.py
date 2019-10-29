@@ -14,11 +14,8 @@ class Client:
         s.send(msg.create_message(action="HELLO"))
         public_key, private_key = enc.new_key()
         server_public_key = s.recv(self.buffer_size)
-        print(server_public_key)
-        enc_msg = enc.encrypt(server_public_key, public_key)
-        s.send(enc_msg)
+        s.send(public_key)
         data = s.recv(self.buffer_size)
-        data = enc.decrypt(private_key, data)
         data_json = msg.measage_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after key exchange")

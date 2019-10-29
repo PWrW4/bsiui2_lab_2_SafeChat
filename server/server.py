@@ -26,12 +26,9 @@ class MasterServer:
             connection.send(msg.create_message(action='ERROR', arg1="wrong first message"))
             connection.close()
         public_key, private_key = enc.new_key()
-        print(public_key)
         connection.send(public_key)
         client_public_key = connection.recv(self.buffer_size)
-        client_public_key = enc.decrypt(private_key, client_public_key)
-
-        connection.send(enc.encrypt(client_public_key,msg.create_message(action="OK")))
+        connection.send(msg.create_message(action="OK"))
 
         data = connection.recv(self.buffer_size)
         received_json = msg.measage_to_json(data)
