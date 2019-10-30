@@ -12,6 +12,8 @@ def create_message(action, arg1=None, arg2=None):
         list = ["action", action, "message", str(arg1)]
     elif action == "L" or action == "R":
         list = ["action", action, "login", str(arg1), "password", str(arg2)]
+    elif action == "UU":
+        list = ["action", action, "Ulist", dict(arg1)]
     elif action == "OK" or action == "HELLO":
         list = ["action", action]
     else:

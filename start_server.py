@@ -1,5 +1,5 @@
 import os
-from server.server import MasterServer
+from server.server_app import ServerApp
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,4 +10,4 @@ buffer_size = int(os.getenv("BUFFER_SIZE"))
 
 print("IP: ", ip, "PORT: ", port, "BUFFER_SIZE: ", buffer_size)
 
-ms = MasterServer(master_server_ip=ip, master_server_port=port, buffer_size=buffer_size)
+ms = ServerApp(master_server_ip=ip, master_server_port=port, buffer_size=buffer_size)

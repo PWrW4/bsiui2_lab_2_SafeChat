@@ -1,12 +1,11 @@
 import socket
 import threading
-import json
-import helpers.message as msg
+
 import helpers.encryption as enc
-import os
+import helpers.message as msg
 
 
-class MasterServer:
+class ServerApp:
     def __init__(self, master_server_ip, master_server_port, buffer_size):
         self.buffer_size = buffer_size
         self.master_server_ip = master_server_ip
@@ -33,16 +32,16 @@ class MasterServer:
         data = connection.recv(self.buffer_size)
         received_json = msg.measage_to_json(data)
 
-        print(received_json)
+        connection.send(msg.create_message(action="OK"))
 
         while True:
-            print("dupa4")
             data = connection.recv(self.buffer_size)
             if not data:
                 break
-            print(data.decode(encoding='utf-8'))
-            received_json = msg.measage_to_json(data)
-            connection.send(str(received_json['action']).encode(encoding='utf-8'))  # echo
+            data = msg.measage_to_json(data)
+            if data["action"] == "UU":
+                u_msg = msg.create_message(action="UU", arg1=self.addresses)
+                connection.send(u_msg)
         connection.close()
 
     def master_server_loop(self):
@@ -55,5 +54,5 @@ class MasterServer:
             self.addresses.update({self.next_id: address})
             self.connections.update({self.next_id: conn})
             print('Connection address:', self.next_id, ' : ', address)
-            threading.Thread(target=self.client_loop, args=(self.next_id,conn, address)).start()
+            threading.Thread(target=self.client_loop, args=(self.next_id, conn, address)).start()
             self.next_id = self.next_id + 1

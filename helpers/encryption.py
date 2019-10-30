@@ -2,7 +2,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
 
-def new_key(length=4096, passphrase=None):
+def new_key(length=1024, passphrase=None):
     key = RSA.generate(length)
     pub_key = key.publickey().exportKey('PEM', passphrase)
     priv_key = key.exportKey('PEM', passphrase)
