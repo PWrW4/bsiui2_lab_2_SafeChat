@@ -15,7 +15,6 @@ def decrypt(priv_key: bytes, msg: bytes):
     for x in range(len(list_of_package)):
         list_of_package[x] = decryptor.decrypt(list_of_package[x])
     msg = b''.join(list_of_package)
-    print(msg.decode())
     return msg.decode()
 
 
@@ -27,5 +26,4 @@ def encrypt(pub_key: bytes, msg):
     for x in range(len(list_of_package)):  # szyfrowanie kazdej paczki 100 bajtów
         list_of_package[x] = encryptor.encrypt(list_of_package[x])
     msg = b''.join(list_of_package)  # laczenie w jeden ciag bitow kazdej zaszyfrowanej paczki
-    print(msg)
     return msg

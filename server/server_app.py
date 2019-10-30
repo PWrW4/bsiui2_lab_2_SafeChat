@@ -26,21 +26,21 @@ class ServerApp:
             connection.close()
         public_key, private_key = enc.new_key()
         connection.send(public_key)
-        client_public_key = connection.recv(self.buffer_size)
-        connection.send(msg.create_message(action="OK"))
+        client_public_key = enc.decrypt(private_key, connection.recv(self.buffer_size))
+        connection.send(enc.encrypt(client_public_key, msg.create_message(action="OK")))
 
-        data = connection.recv(self.buffer_size)
+        data = enc.decrypt(private_key, connection.recv(self.buffer_size))
         received_json = msg.message_to_json(data)
 
-        connection.send(msg.create_message(action="OK"))
+        connection.send(enc.encrypt(client_public_key, msg.create_message(action="OK")))
 
         while True:
-            data = connection.recv(self.buffer_size)
+            data = enc.decrypt(private_key, connection.recv(self.buffer_size))
             if not data:
                 break
             data = msg.message_to_json(data)
             if data["action"] == "UU":
-                u_msg = msg.create_message(action="UU", arg1=self.addresses)
+                u_msg = enc.encrypt(client_public_key, msg.create_message(action="UU", arg1=self.addresses))
                 connection.send(u_msg)
         connection.close()
 

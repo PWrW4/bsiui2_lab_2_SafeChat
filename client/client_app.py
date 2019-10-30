@@ -35,8 +35,8 @@ class ClientApp:
         s.send(msg.create_message(action="HELLO"))
         public_key, private_key = enc.new_key()
         server_public_key = s.recv(self.buffer_size)
-        s.send(public_key)
-        data = s.recv(self.buffer_size)
+        s.send(enc.encrypt(server_public_key, public_key))
+        data = enc.decrypt(private_key, s.recv(self.buffer_size))
         data_json = msg.message_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after key exchange")
@@ -49,19 +49,19 @@ class ClientApp:
         login = input("Login: ")
         password = input("Password: ")
 
-        login_register_msg = msg.create_message(action=action, arg1=login, arg2=password)
+        login_register_msg = enc.encrypt(server_public_key, msg.create_message(action=action, arg1=login, arg2=password))
         s.send(login_register_msg)
 
-        data = s.recv(self.buffer_size)
+        data = enc.decrypt(private_key, s.recv(self.buffer_size))
         data_json = msg.message_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after key exchange")
             s.close()
 
-        u_msg = msg.create_message(action="UU", arg1={})
+        u_msg = enc.encrypt(server_public_key, msg.create_message(action="UU", arg1={}))
         s.send(u_msg)
 
-        data = s.recv(self.buffer_size)
+        data = enc.decrypt(private_key, s.recv(self.buffer_size))
         data_json = msg.message_to_json(data)
 
         print(data_json)
