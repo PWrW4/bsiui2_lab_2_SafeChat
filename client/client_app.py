@@ -6,11 +6,11 @@ import helpers.encryption as enc
 
 
 class ClientApp:
-    def __init__(self, master_server_ip, master_server_port, buffer_size, client_port):
+    def __init__(self, master_server_ip, master_server_port, buffer_size):
         self.buffer_size = buffer_size
         self.master_server_ip = master_server_ip
         self.master_server_port = master_server_port
-        self.client_port = client_port
+        self.client_port = 0
         threading.Thread(target=self.client_server, args=()).start()
         threading.Thread(target=self.client_listening, args=()).start()
 
@@ -69,10 +69,11 @@ class ClientApp:
 
     def client_listening(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((self.master_server_ip, self.client_port))
+        s.bind((self.master_server_ip, 0))
+
         s.listen(self.buffer_size)
 
-        print("Client listening")
+        print("Client listening on port: ", s.getsockname()[1])
 
         while True:
             conn, address = s.accept()
