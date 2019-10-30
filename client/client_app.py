@@ -19,14 +19,14 @@ class ClientApp:
         if not data:
             connection.send(msg.create_message(action='ERROR', arg1="no data"))
             connection.close()
-        received_json = msg.measage_to_json(data)
+        received_json = msg.message_to_json(data)
 
     def client_to_client(self, connection, address):
         data = connection.recv(self.buffer_size)
         if not data:
             connection.send(msg.create_message(action='ERROR', arg1="no data"))
             connection.close()
-        received_json = msg.measage_to_json(data)
+        received_json = msg.message_to_json(data)
 
     def client_server(self):
         print("client connecting")
@@ -37,7 +37,7 @@ class ClientApp:
         server_public_key = s.recv(self.buffer_size)
         s.send(public_key)
         data = s.recv(self.buffer_size)
-        data_json = msg.measage_to_json(data)
+        data_json = msg.message_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after key exchange")
             s.close()
@@ -53,7 +53,7 @@ class ClientApp:
         s.send(login_register_msg)
 
         data = s.recv(self.buffer_size)
-        data_json = msg.measage_to_json(data)
+        data_json = msg.message_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after key exchange")
             s.close()
@@ -62,14 +62,14 @@ class ClientApp:
         s.send(u_msg)
 
         data = s.recv(self.buffer_size)
-        data_json = msg.measage_to_json(data)
+        data_json = msg.message_to_json(data)
 
         print(data_json)
         s.close()
 
     def client_listening(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((self.master_server_ip, self.client_port))
+        s.bind((self.master_server_ip, 0))
         s.listen(self.buffer_size)
 
         print("Client listening")

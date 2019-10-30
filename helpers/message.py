@@ -1,7 +1,7 @@
 import json
 
 
-def create_message(action, arg1=None, arg2=None):
+def create_message(action: str, arg1=None, arg2=None):
     def convert(a):
         it = iter(a)
         res_dct = dict(zip(it, it))
@@ -13,7 +13,7 @@ def create_message(action, arg1=None, arg2=None):
     elif action == "L" or action == "R":
         list = ["action", action, "login", str(arg1), "password", str(arg2)]
     elif action == "UU":
-        list = ["action", action, "Ulist", dict(arg1)]
+        list = ["action", action, "ulist", dict(arg1)]
     elif action == "OK" or action == "HELLO":
         list = ["action", action]
     else:
@@ -22,5 +22,5 @@ def create_message(action, arg1=None, arg2=None):
     return json_msg.encode(encoding='utf-8')
 
 
-def measage_to_json(msg):
+def message_to_json(msg: bytes):
     return json.loads(msg)

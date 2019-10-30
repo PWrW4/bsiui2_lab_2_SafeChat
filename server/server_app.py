@@ -20,7 +20,7 @@ class ServerApp:
         if not data:
             connection.send(msg.create_message(action='ERROR', arg1="no data"))
             connection.close()
-        received_json = msg.measage_to_json(data)
+        received_json = msg.message_to_json(data)
         if received_json['action'] != "HELLO":
             connection.send(msg.create_message(action='ERROR', arg1="wrong first message"))
             connection.close()
@@ -30,7 +30,7 @@ class ServerApp:
         connection.send(msg.create_message(action="OK"))
 
         data = connection.recv(self.buffer_size)
-        received_json = msg.measage_to_json(data)
+        received_json = msg.message_to_json(data)
 
         connection.send(msg.create_message(action="OK"))
 
@@ -38,7 +38,7 @@ class ServerApp:
             data = connection.recv(self.buffer_size)
             if not data:
                 break
-            data = msg.measage_to_json(data)
+            data = msg.message_to_json(data)
             if data["action"] == "UU":
                 u_msg = msg.create_message(action="UU", arg1=self.addresses)
                 connection.send(u_msg)
