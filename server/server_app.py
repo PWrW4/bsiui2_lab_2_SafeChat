@@ -1,12 +1,12 @@
 import socket
 import threading
 
-import helpers.encryption as enc
+import helpers.crypto_rsa as enc
 import helpers.message as msg
 
 
 class ServerApp:
-    def __init__(self, master_server_ip, master_server_port, buffer_size):
+    def __init__(self, master_server_ip: str, master_server_port: int, buffer_size: int):
         self.buffer_size = buffer_size
         self.master_server_ip = master_server_ip
         self.master_server_port = master_server_port
@@ -15,7 +15,7 @@ class ServerApp:
         self.addresses = {}
         threading.Thread(target=self.master_server_loop, args=()).start()
 
-    def client_loop(self, client_id, connection, address):
+    def client_loop(self, client_id: int, connection, address):
         data = connection.recv(self.buffer_size)
         if not data:
             connection.send(msg.create_message(action='ERROR', arg1="no data"))
@@ -24,23 +24,23 @@ class ServerApp:
         if received_json['action'] != "HELLO":
             connection.send(msg.create_message(action='ERROR', arg1="wrong first message"))
             connection.close()
-        public_key, private_key = enc.new_key()
+        public_key, private_key = enc.CryptoRSA.new_key()
         connection.send(public_key)
-        client_public_key = enc.decrypt(private_key, connection.recv(self.buffer_size))
-        connection.send(enc.encrypt(client_public_key, msg.create_message(action="OK")))
-
-        data = enc.decrypt(private_key, connection.recv(self.buffer_size))
+        client_public_key = enc.CryptoRSA.decrypt_with_key(private_key, connection.recv(self.buffer_size))
+        rsa = enc.CryptoRSA(client_public_key, private_key)
+        connection.send(rsa.encrypt(msg.create_message(action="OK")))
+        data = rsa.decrypt(connection.recv(self.buffer_size))
         received_json = msg.message_to_json(data)
 
-        connection.send(enc.encrypt(client_public_key, msg.create_message(action="OK")))
+        connection.send(rsa.encrypt(msg.create_message(action="OK")))
 
         while True:
-            data = enc.decrypt(private_key, connection.recv(self.buffer_size))
+            data = rsa.decrypt(connection.recv(self.buffer_size))
             if not data:
                 break
             data = msg.message_to_json(data)
             if data["action"] == "UU":
-                u_msg = enc.encrypt(client_public_key, msg.create_message(action="UU", arg1=self.addresses))
+                u_msg = rsa.encrypt(msg.create_message(action="UU", arg1=self.addresses))
                 connection.send(u_msg)
         connection.close()
 
