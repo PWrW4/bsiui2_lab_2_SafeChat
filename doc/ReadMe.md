@@ -2,13 +2,15 @@
 List of actions that are in save chat app, based on arrangements made on laboratories:
 
 1. [UU - Update Users](#markdown-header-action-uu-update-users)
-2. [L/R - Login/Register](#)
-3. [OK](#)
-4. [ERROR](#)
-5. [HELLO](#)
-5. [M - Message](#)
-6. [OUT](#)
-7. [CT - Connection Token](#)
+2. [L/R - Login/Register](#markdown-header-action-lr-loginregister)
+3. [OK](#markdown-header-action-ok)
+4. [ERROR](#markdown-header-action-error)
+5. [HELLO](#markdown-header-action-hello)
+5. [M - Message](#markdown-header-action-m-message)
+6. [OUT](#markdown-header-action-out)
+7. [CT - Connection Token](#markdown-header-action-ct-connection-token)
+
+---
 
 ### Action UU - Update users
 User sends request with list of nicknames:
@@ -54,6 +56,8 @@ Also provides ip, port and secret token of two users :
 }
 ```
 
+---
+
 ### Action L/R - Login/Register
 User sends login or register data:
 
@@ -88,6 +92,8 @@ OR
 }
 ```
 
+---
+
 ### Action OK
 Action is positive response to other action
 
@@ -96,6 +102,8 @@ Action is positive response to other action
    "action":"OK"
 }
 ```
+
+---
 
 ### Action ERROR
 Action is negative response to other action, also providing error message.
@@ -107,6 +115,8 @@ Action is negative response to other action, also providing error message.
 }
 ```
 
+---
+
 ### Action HELLO
 First action sent after connecting.
 
@@ -115,6 +125,8 @@ First action sent after connecting.
    "action":"HELLO"
 }
 ```
+
+---
 
 ### Action M - Message
 Action which sends message data to other client after establishing connection.
@@ -126,7 +138,9 @@ Action which sends message data to other client after establishing connection.
 }
 ```
 
-### Action M - Message
+---
+
+### Action OUT
 Disconnect action.
 
 ```json
@@ -134,6 +148,8 @@ Disconnect action.
    "action":"OUT"
 }
 ```
+
+---
 
 ### Action CT - Connection Token
 Action which sends to client to which we are connecting `Connection Token`.
