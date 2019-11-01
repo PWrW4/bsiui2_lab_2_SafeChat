@@ -12,7 +12,7 @@ List of actions that are in save chat app, based on arrangements made on laborat
 
 ---
 
-### Action UU - Update users
+## Action UU - Update users
 User sends request with list of nicknames:
 
 ```json
@@ -55,10 +55,11 @@ Also provides ip, port and secret token of two users :
    ]
 }
 ```
+[BACK TO TOP](#markdown-header-jsons-description)
 
 ---
 
-### Action L/R - Login/Register
+## Action L/R - Login/Register
 User sends login or register data:
 
 ```json
@@ -78,7 +79,7 @@ OR
    "port":1234
 }
 ```
-Server respond with `OK` (logged in) or `ERROR`(some error)
+Server respond with [OK](#markdown-header-action-ok) (logged in) or [ERROR](#markdown-header-action-error) (some error)
 ```json
 {
    "action":"OK"
@@ -91,10 +92,12 @@ OR
    "message":"Wrong login data"
 }
 ```
+[BACK TO TOP](#markdown-header-jsons-description)
 
 ---
 
-### Action OK
+
+## Action OK
 Action is positive response to other action
 
 ```json
@@ -103,9 +106,11 @@ Action is positive response to other action
 }
 ```
 
+[BACK TO TOP](#markdown-header-jsons-description)
+
 ---
 
-### Action ERROR
+## Action ERROR
 Action is negative response to other action, also providing error message.
 
 ```json
@@ -115,9 +120,11 @@ Action is negative response to other action, also providing error message.
 }
 ```
 
+[BACK TO TOP](#markdown-header-jsons-description)
+
 ---
 
-### Action HELLO
+## Action HELLO
 First action sent after connecting.
 
 ```json
@@ -126,9 +133,11 @@ First action sent after connecting.
 }
 ```
 
+[BACK TO TOP](#markdown-header-jsons-description)
+
 ---
 
-### Action M - Message
+## Action M - Message
 Action which sends message data to other client after establishing connection.
 
 ```json
@@ -138,9 +147,11 @@ Action which sends message data to other client after establishing connection.
 }
 ```
 
+[BACK TO TOP](#markdown-header-jsons-description)
+
 ---
 
-### Action OUT
+## Action OUT
 Disconnect action.
 
 ```json
@@ -149,11 +160,12 @@ Disconnect action.
 }
 ```
 
+[BACK TO TOP](#markdown-header-jsons-description)
+
 ---
 
-### Action CT - Connection Token
+## Action CT - Connection Token
 Action which sends to client to which we are connecting `Connection Token`.
-Client after `Connection Token` checks it on server and respond with OK or ERROR.
 
 ```json
 {
@@ -163,3 +175,21 @@ Client after `Connection Token` checks it on server and respond with OK or ERROR
 }
 ```
 
+Client after `Connection Token` checks it on server and respond with [OK](#markdown-header-action-ok) or [ERROR](#markdown-header-action-error) message and
+then disconnects.
+```json
+{
+   "action":"OK"
+}
+```
+OR
+```json
+{
+   "action":"ERROR",
+   "message":"Wrong Token"
+}
+```
+
+[BACK TO TOP](#markdown-header-jsons-description)
+
+---
