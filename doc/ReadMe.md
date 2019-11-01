@@ -3,7 +3,7 @@ List of actions that are in save chat app, based on arrangements made on laborat
 
 1. [UU](#markdown-header-1action-uu-update-users-uu)
 
-###1.Action `UU` - Update users
+### 1.Action `UU` - Update users
 User sends request with list of nicknames:
 
 ```
