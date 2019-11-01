@@ -1,10 +1,11 @@
-#Jsons description
+# Jsons description
 List of actions that are in save chat app, based on arrangements made on laboratories.
 
-1. [UU](#uu)
+1. [UU](#markdown-header-1action-uu-update-users-uu)
 
-### 1.Action `UU` - Update users {#uu}
+###1.Action `UU` - Update users
 User sends request with list of nicknames:
+
 ```
 {
    "action":"UU",
