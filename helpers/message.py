@@ -7,18 +7,18 @@ def create_message(action: str, arg1=None, arg2=None):
         res_dct = dict(zip(it, it))
         return res_dct
 
-    list = []
-    if action == "M" or action == "ERROR":
-        list = ["action", action, "message", str(arg1)]
+    lst = []
+    if action == "M" or action == "ERROR" or action == "CT":
+        lst = ["action", action, "message", str(arg1)]
     elif action == "L" or action == "R":
-        list = ["action", action, "login", str(arg1), "password", str(arg2)]
+        lst = ["action", action, "login", str(arg1), "password", str(arg2)]
     elif action == "UU":
-        list = ["action", action, "ulist", dict(arg1)]
+        lst = ["action", action, "ulist", list(arg1)]
     elif action == "OK" or action == "HELLO":
-        list = ["action", action]
+        lst = ["action", action]
     else:
         return "ERROR - action not found"
-    json_msg = json.dumps(convert(list)) + "\n"
+    json_msg = json.dumps(convert(lst))
     return json_msg.encode(encoding='utf-8')
 
 
