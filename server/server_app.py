@@ -68,6 +68,8 @@ class ServerApp:
                 if self.clients[k].login in request_array:
                     json_array.append(self.create_uu_user_object(client, self.clients[k]))
 
+        print("created uu action object, request by: ", client.login, " : ", json_array)
+
         return json_array
 
     def create_secret_token(self, user1, user2):
