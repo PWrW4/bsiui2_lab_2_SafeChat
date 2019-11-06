@@ -115,7 +115,6 @@ class ClientApp:
             server.send(u_msg)
 
             data = rsa_server.decrypt(server.recv(self.buffer_size))
-            # data = b'{"action":"UU","ulist":[{"adrian":["127.0.0.1",64079,"superSecretToken"]},{"marcin":["127.0.0.1",1338,"superSecretToken"]},{"tomek":["127.0.0.1",1339,"superSecretToken"]}]}'
             data_json = msg.message_to_json(data)
             ulist = data_json['ulist']
 

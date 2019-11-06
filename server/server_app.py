@@ -13,21 +13,27 @@ from models.server_client_authorization_data import ClientAuthorizeData
 
 
 class ServerApp:
-    def __init__(self, master_server_ip: str, master_server_port: int, buffer_size: int, username_hash: str):
-        self.username_hash = username_hash
+    def __init__(self,
+                 master_server_ip: str,
+                 master_server_port: int,
+                 buffer_size: int,
+                 username_salt: str,
+                 token_salt: str
+                 ):
+        self.username_salt = username_salt
+        self.token_salt = token_salt
         self.user_file_data_name = 'server_users.sch'
         self.buffer_size = buffer_size
         self.master_server_ip = master_server_ip
         self.master_server_port = master_server_port
         self.next_id = 0
-        self.connections = {}
         self.clients = {}
         self.hashes = self.load_hashes()
         self.ph = PasswordHasher()
         threading.Thread(target=self.master_server_loop, args=()).start()
 
-    @staticmethod
-    def create_hash(data):
+    def create_hash(self, data):
+        data = data + self.username_salt
         return SHA256.new(data=data.encode()).hexdigest()
 
     def if_username_free(self, username):
@@ -46,7 +52,27 @@ class ServerApp:
                 except argon2.exceptions.VerifyMismatchError:
                     return False
 
+    def create_uu_user_object(self, client, friend_user):
+        return {friend_user.login: [friend_user.address[0],
+                                    friend_user.listen_port,
+                                    self.create_secret_token(client.login, friend_user.login)
+                                    ]
+                }
 
+    def create_uu_array(self, client, json_request):
+        json_array = []
+        request_array = json_request["ulist"]
+
+        for k in self.clients.keys():
+            if self.clients[k].status == ClientStatus.LOGGED_IN:
+                if self.clients[k].login in request_array:
+                    json_array.append(self.create_uu_user_object(client, self.clients[k]))
+
+        return json_array
+
+    def create_secret_token(self, user1, user2):
+        sorted_users = [user1, user2, self.token_salt]
+        return self.create_hash(sorted_users[0] + sorted_users[1] + sorted_users[2])
 
     def load_hashes(self):
         try:
@@ -157,8 +183,18 @@ class ServerApp:
                 break
             data = msg.message_to_json(data)
             if data["action"] == "UU":
-                u_msg = rsa.encrypt(msg.create_message(action="UU", arg1=self.clients))
+                u_msg = rsa.encrypt(msg.create_message(action="UU",
+                                                       arg1=self.create_uu_array(self.clients[client_id],
+                                                                                 data)
+                                                       ))
                 connection.send(u_msg)
+            else:
+                print("Wrong action from client (expected UU) : ", address)
+                connection.send(msg.create_message(action='ERROR', arg1="wrong action after login"))
+                connection.send(msg.create_message(action='OUT'))
+                connection.close()
+                del self.clients[client_id]
+                return
         connection.close()
 
     def master_server_loop(self):
