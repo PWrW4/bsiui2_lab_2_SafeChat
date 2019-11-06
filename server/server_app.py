@@ -126,6 +126,8 @@ class ServerApp:
 
         print("Sent server public key: ", address)
 
+        # Everything is encrypted from here
+
         client_public_key = enc.CryptoRSA.decrypt_with_key(private_key, connection.recv(self.buffer_size))
         rsa = enc.CryptoRSA(client_public_key, private_key)
 
@@ -154,34 +156,35 @@ class ServerApp:
                 print("Client Registered in : ", address)
             else:
                 print("Username exist in database or already logged in : ", address)
-                connection.send(msg.create_message(action='ERROR', arg1="username taken already logged in"))
-                connection.send(msg.create_message(action='OUT'))
+                connection.send(
+                    rsa.encrypt(msg.create_message(action='ERROR', arg1="username taken already logged in")))
+                connection.send(rsa.encrypt(msg.create_message(action='OUT')))
                 connection.close()
                 del self.clients[client_id]
                 return
 
         elif received_json["action"] == 'L':
             print("Client Logging in : ", address)
-            if self.if_credentials_correct(received_json["login"],
-                                           received_json["password"]) and self.user_not_logged_in(
-                    received_json["login"]):
+            if self.if_credentials_correct(received_json["login"], received_json["password"]) and \
+                    self.user_not_logged_in(received_json["login"]):
                 self.clients[client_id].status = ClientStatus.LOGGED_IN
                 self.clients[client_id].login = received_json["login"]
                 self.clients[client_id].listen_port = received_json["port"]
                 print("Client Logged in : ", address)
             else:
                 print("Wrong credentials at logging in, disconnecting : ", address)
-                connection.send(msg.create_message(action='ERROR', arg1="username or password incorrect or already "
-                                                                        "logged in"))
-                connection.send(msg.create_message(action='OUT'))
+                connection.send(
+                    rsa.encrypt(msg.create_message(action='ERROR', arg1="username or password incorrect or already "
+                                                                        "logged in")))
+                connection.send(rsa.encrypt(msg.create_message(action='OUT')))
                 connection.close()
                 del self.clients[client_id]
                 return
 
         else:
             print("Wrong action from client (expected R/L) : ", address)
-            connection.send(msg.create_message(action='ERROR', arg1="wrong action"))
-            connection.send(msg.create_message(action='OUT'))
+            connection.send(rsa.encrypt(msg.create_message(action='ERROR', arg1="wrong action")))
+            connection.send(rsa.encrypt(msg.create_message(action='OUT')))
             connection.close()
             del self.clients[client_id]
             return
@@ -202,8 +205,8 @@ class ServerApp:
                 connection.send(u_msg)
             else:
                 print("Wrong action from client (expected UU) : ", address)
-                connection.send(msg.create_message(action='ERROR', arg1="wrong action after login"))
-                connection.send(msg.create_message(action='OUT'))
+                connection.send(rsa.encrypt(msg.create_message(action='ERROR', arg1="wrong action after login")))
+                connection.send(rsa.encrypt(msg.create_message(action='OUT')))
                 connection.close()
                 del self.clients[client_id]
                 return
