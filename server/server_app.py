@@ -72,6 +72,7 @@ class ServerApp:
 
     def create_secret_token(self, user1, user2):
         sorted_users = [user1, user2, self.token_salt]
+        sorted_users.sort()
         return self.create_hash(sorted_users[0] + sorted_users[1] + sorted_users[2])
 
     def load_hashes(self):
