@@ -84,7 +84,7 @@ class ClientApp:
         login = input("Login: ")
         password = input("Password: ")
 
-        login_register_msg = rsa.encrypt(msg.create_message(action=action, arg1=login, arg2=password))
+        login_register_msg = rsa.encrypt(msg.create_message(action=action, arg1=login, arg2=password, arg3=self.client_port))
         s.send(login_register_msg)
 
         data = rsa.decrypt(s.recv(self.buffer_size))
@@ -101,6 +101,7 @@ class ClientApp:
         s.listen(self.buffer_size)
 
         print("Client listening on port: ", s.getsockname()[1])
+        self.client_port = s.getsockname()[1]
 
         while True:
             conn, address = s.accept()

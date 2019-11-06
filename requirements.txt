@@ -1,2 +1,3 @@
 python-dotenv
 pycryptodome
+argon2-cffi

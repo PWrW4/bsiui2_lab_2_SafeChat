@@ -3,4 +3,5 @@ from enum import Enum
 
 class ClientStatus(Enum):
     CONNECTED = 1
-    DISCONNECTED = 2
+    CONNECTING = 2
+    LOGGED_IN = 3

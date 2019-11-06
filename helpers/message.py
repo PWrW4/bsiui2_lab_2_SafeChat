@@ -1,7 +1,7 @@
 import json
 
 
-def create_message(action: str, arg1=None, arg2=None):
+def create_message(action: str, arg1=None, arg2=None, arg3=None):
     def convert(a):
         it = iter(a)
         res_dct = dict(zip(it, it))
@@ -11,10 +11,10 @@ def create_message(action: str, arg1=None, arg2=None):
     if action == "M" or action == "ERROR" or action == "CT":
         lst = ["action", action, "message", str(arg1)]
     elif action == "L" or action == "R":
-        lst = ["action", action, "login", str(arg1), "password", str(arg2)]
+        lst = ["action", action, "login", str(arg1), "password", str(arg2), "port", str(arg2)]
     elif action == "UU":
         lst = ["action", action, "ulist", list(arg1)]
-    elif action == "OK" or action == "HELLO":
+    elif action == "OK" or action == "HELLO" or action == "OUT":
         lst = ["action", action]
     else:
         return "ERROR - action not found"
