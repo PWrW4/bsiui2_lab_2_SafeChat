@@ -11,6 +11,10 @@ class ClientApp:
         self.master_server_ip = master_server_ip
         self.master_server_port = master_server_port
         self.client_port = 0
+        self.rsa_server = None
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.nick = ""
+
         threading.Thread(target=self.client_server, args=()).start()
         threading.Thread(target=self.client_listening, args=()).start()
 
@@ -31,9 +35,28 @@ class ClientApp:
         connection.send(rsa.encrypt(msg.create_message(action="OK")))
         data = rsa.decrypt(connection.recv(self.buffer_size))
 
-        received_json = msg.message_to_json(data) # to powinien być CT
+        received_json = msg.message_to_json(data)
         if received_json['action'] != "CT":
-            print("its not connection token")
+            print("token error - token not found")
+            connection.send(msg.create_message(action='ERROR', arg1="bad connection token"))
+            connection.close()
+
+        print(received_json)
+
+        u_msg = self.rsa_server.encrypt(msg.create_message(action="UU", arg1=[received_json['nick']]))
+        self.server.send(u_msg)
+
+        data = self.rsa_server.decrypt(self.server.recv(self.buffer_size))
+        data_json = msg.message_to_json(data)
+        ulist = data_json['ulist']
+        your_ct = (((ulist[0])[received_json['nick']])[2])
+
+        print(data_json)
+        # print(received_json['token'], your_ct)
+
+        if received_json['token'] != your_ct:
+            print("token error - tokens not equals", received_json['token'], your_ct)
+            connection.send(msg.create_message(action='ERROR', arg1="bad connection token"))
             connection.close()
 
         connection.send(rsa.encrypt(msg.create_message(action="OK")))
@@ -41,6 +64,7 @@ class ClientApp:
 
     def client_to_client(self, connection, address):
         print("C2: ", address)
+        connection.connect((address[0], address[1]))
         connection.send(msg.create_message(action="HELLO"))
         public_key, private_key = enc.CryptoRSA.new_key()
         client_public_key = connection.recv(self.buffer_size)
@@ -52,7 +76,18 @@ class ClientApp:
             print("no ok status after key exchange")
             connection.close()
 
-        connection.send(rsa.encrypt(msg.create_message(action="CT", arg1="superSecretToken"))) # Tu powinno być wyslanie CT
+        u_msg = self.rsa_server.encrypt(msg.create_message(action="UU", arg1=[self.nick]))
+        self.server.send(u_msg)
+
+        data = self.rsa_server.decrypt(self.server.recv(self.buffer_size))
+        data_json = msg.message_to_json(data)
+
+        print(data_json)
+
+        ulist = data_json['ulist']
+        your_ct = (((ulist[0])[self.nick])[2])
+
+        connection.send(rsa.encrypt(msg.create_message(action="CT", arg1=self.nick, arg2=your_ct)))
 
         data = rsa.decrypt(connection.recv(self.buffer_size))
         data_json = msg.message_to_json(data)
@@ -64,36 +99,36 @@ class ClientApp:
 
     def client_server(self):
         print("client connecting")
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.master_server_ip, self.master_server_port))
-        s.send(msg.create_message(action="HELLO"))
+        self.server.connect((self.master_server_ip, self.master_server_port))
+        self.server.send(msg.create_message(action="HELLO"))
         public_key, private_key = enc.CryptoRSA.new_key()
-        server_public_key = s.recv(self.buffer_size)
-        rsa = enc.CryptoRSA(server_public_key, private_key)
-        s.send(rsa.encrypt(public_key))
-        data = rsa.decrypt(s.recv(self.buffer_size))
+        server_public_key = self.server.recv(self.buffer_size)
+        self.rsa_server = enc.CryptoRSA(server_public_key, private_key)
+        self.server.send(self.rsa_server.encrypt(public_key))
+        data = self.rsa_server.decrypt(self.server.recv(self.buffer_size))
         data_json = msg.message_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after key exchange")
-            s.close()
+            self.server.close()
 
         action = ''
         while action != "L" and action != "R":
             action = (input("Login(L) or Register(R)")).upper()
 
-        login = input("Login: ")
+        self.nick = input("Login: ")
         password = input("Password: ")
 
-        login_register_msg = rsa.encrypt(msg.create_message(action=action, arg1=login, arg2=password, arg3=self.client_port))
-        s.send(login_register_msg)
+        login_register_msg = self.rsa_server.encrypt(
+            msg.create_message(action=action, arg1=self.nick, arg2=password, arg3=self.client_port))
+        self.server.send(login_register_msg)
 
-        data = rsa.decrypt(s.recv(self.buffer_size))
+        data = self.rsa_server.decrypt(self.server.recv(self.buffer_size))
         data_json = msg.message_to_json(data)
         if data_json['action'] != "OK":
             print("no ok status after login/register")
-            s.close()
+            self.server.close()
 
-        threading.Thread(target=self.client_console, args=(s, rsa)).start()
+        threading.Thread(target=self.client_console, args=()).start()
 
     def client_listening(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -108,18 +143,18 @@ class ClientApp:
             print('Client connected address: ', address)
             threading.Thread(target=self.client_from_client, args=(conn, address)).start()
 
-    def client_console(self, server, rsa_server):
+    def update_contacts(self, friends, contacts):
+        u_msg = self.rsa_server.encrypt(msg.create_message(action="UU", arg1=friends))
+        self.server.send(u_msg)
 
-        def update_contacts():
-            u_msg = rsa_server.encrypt(msg.create_message(action="UU", arg1=friends))
-            server.send(u_msg)
+        data = self.rsa_server.decrypt(self.server.recv(self.buffer_size))
+        data_json = msg.message_to_json(data)
+        ulist = data_json['ulist']
 
-            data = rsa_server.decrypt(server.recv(self.buffer_size))
-            data_json = msg.message_to_json(data)
-            ulist = data_json['ulist']
+        for i in range(len(ulist)):
+            contacts.update(ulist[i])
 
-            for i in range(len(ulist)):
-                contacts.update(ulist[i])
+    def client_console(self):
 
         print("Now you can connect to other clients (write $help for more instruction)")
         command_list = ["$quit", "$exit", "$help", "$online", "$friends", "$add_friend", "$remove_friend, $connect"]
@@ -130,7 +165,7 @@ class ClientApp:
             command = input()
             if command == "$exit" or command == "$quit":
                 print("The end is near")
-                server.close()
+                self.server.close()
             elif command == "$help":
                 print(command_list)
             elif command == "$friends":
@@ -142,16 +177,16 @@ class ClientApp:
                 friends.remove(input("Your friend nick: "))
                 print("Your friend has been removed from friend list")
             elif command == "$online":
-                update_contacts()
-                print(contacts)
+                self.update_contacts(friends, contacts)
+                for nick in contacts.keys():
+                    print(nick)
             elif command == "$connect":
-                update_contacts()
+                self.update_contacts(friends, contacts)
                 user = input("Connect to: ")
                 if user in contacts.keys():
-                    CT = contacts[user][2]
+                    # ct = contacts[user][2]
                     address = (contacts[user][0], contacts[user][1])
                     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    connection.connect((contacts[user][0], contacts[user][1]))
                     threading.Thread(target=self.client_to_client, args=(connection, address)).start()
                     command = "$exit"
                 else:
