@@ -36,6 +36,12 @@ class ServerApp:
         data = data + self.username_salt
         return SHA256.new(data=data.encode()).hexdigest()
 
+    def user_not_logged_in(self, nick):
+        for k in self.clients.keys():
+            if self.clients[k].status == ClientStatus.LOGGED_IN and self.clients[k].login == nick:
+                return False
+        return True
+
     def if_username_free(self, username):
         username_hash = self.create_hash(username)
         for h in self.hashes:
@@ -135,7 +141,7 @@ class ServerApp:
 
         if received_json["action"] == 'R':
             print("Client Registering : ", address)
-            if self.if_username_free(received_json["login"]):
+            if self.if_username_free(received_json["login"]) and self.user_not_logged_in(received_json["login"]):
                 client_authorized_data = ClientAuthorizeData(username=self.create_hash(received_json["login"]),
                                                              password=self.ph.hash(received_json["password"]))
                 self.hashes.append(client_authorized_data)
@@ -147,8 +153,8 @@ class ServerApp:
 
                 print("Client Registered in : ", address)
             else:
-                print("Username exist in database : ", address)
-                connection.send(msg.create_message(action='ERROR', arg1="username taken"))
+                print("Username exist in database or already logged in : ", address)
+                connection.send(msg.create_message(action='ERROR', arg1="username taken already logged in"))
                 connection.send(msg.create_message(action='OUT'))
                 connection.close()
                 del self.clients[client_id]
@@ -156,14 +162,17 @@ class ServerApp:
 
         elif received_json["action"] == 'L':
             print("Client Logging in : ", address)
-            if self.if_credentials_correct(received_json["login"], received_json["password"]):
+            if self.if_credentials_correct(received_json["login"],
+                                           received_json["password"]) and self.user_not_logged_in(
+                    received_json["login"]):
                 self.clients[client_id].status = ClientStatus.LOGGED_IN
                 self.clients[client_id].login = received_json["login"]
                 self.clients[client_id].listen_port = received_json["port"]
                 print("Client Logged in : ", address)
             else:
                 print("Wrong credentials at logging in, disconnecting : ", address)
-                connection.send(msg.create_message(action='ERROR', arg1="username or password incorrect"))
+                connection.send(msg.create_message(action='ERROR', arg1="username or password incorrect or already "
+                                                                        "logged in"))
                 connection.send(msg.create_message(action='OUT'))
                 connection.close()
                 del self.clients[client_id]

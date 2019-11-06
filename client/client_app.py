@@ -62,7 +62,7 @@ class ClientApp:
         connection.send(rsa.encrypt(msg.create_message(action="OK")))
         # dalej wymiana wiadomosci
 
-    def client_to_client(self, connection, address):
+    def client_to_client(self, connection, address, partner_user_nickname):
         print("C2: ", address)
         connection.connect((address[0], address[1]))
         connection.send(msg.create_message(action="HELLO"))
@@ -76,7 +76,7 @@ class ClientApp:
             print("no ok status after key exchange")
             connection.close()
 
-        u_msg = self.rsa_server.encrypt(msg.create_message(action="UU", arg1=[self.nick]))
+        u_msg = self.rsa_server.encrypt(msg.create_message(action="UU", arg1=[partner_user_nickname]))
         self.server.send(u_msg)
 
         data = self.rsa_server.decrypt(self.server.recv(self.buffer_size))
@@ -86,6 +86,8 @@ class ClientApp:
 
         ulist = data_json['ulist']
         your_ct = (((ulist[0])[self.nick])[2])
+
+        print("My CT to user: ", partner_user_nickname, " : ", your_ct)
 
         connection.send(rsa.encrypt(msg.create_message(action="CT", arg1=self.nick, arg2=your_ct)))
 
@@ -184,10 +186,9 @@ class ClientApp:
                 self.update_contacts(friends, contacts)
                 user = input("Connect to: ")
                 if user in contacts.keys():
-                    # ct = contacts[user][2]
                     address = (contacts[user][0], contacts[user][1])
                     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    threading.Thread(target=self.client_to_client, args=(connection, address)).start()
+                    threading.Thread(target=self.client_to_client, args=(connection, address, user)).start()
                     command = "$exit"
                 else:
                     print("Wrong user")
